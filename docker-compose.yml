@@ -2,7 +2,7 @@ services:
   web:
     build: .
     container_name: django_web
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python djangoproject/manage.py runserver 0.0.0.0:8000
     restart: always
     ports:
       - "8000:8000"
