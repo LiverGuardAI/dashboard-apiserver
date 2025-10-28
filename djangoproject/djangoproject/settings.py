@@ -53,9 +53,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'rest_framework',
     "liverguard",
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -141,3 +143,22 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# settings.py
+AUTHENTICATION_BACKENDS = [
+    'liverguard.auth_backends.DoctorBackend',  # 의사용 커스텀 인증
+    'django.contrib.auth.backends.ModelBackend',  # 기본 관리자용 (auth_user)
+]
+
+# React 개발 서버(3000번 포트)에서 오는 요청 허용
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
+
+# React에서 로그인 세션(cookie) 포함하려면
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF 관련 신뢰 도메인 (세션 기반일 경우 필수)
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+]
