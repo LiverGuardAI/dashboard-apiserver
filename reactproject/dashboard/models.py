@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.hashers import make_password, check_password
 import uuid
 
 
@@ -18,153 +17,154 @@ class Announcements(models.Model):
         verbose_name_plural = '공지사항'
 
 
-class Patients(models.Model):
+# ----------------------------------------
+# 1️⃣ 환자 정보 테이블 (dbr_patients)
+# ----------------------------------------
+class DbrPatients(models.Model):
     SEX_CHOICES = [
         ('male', '남성'),
         ('female', '여성'),
     ]
 
-    patient_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100)
-    birth_date = models.DateField()
-    sex = models.CharField(max_length=6, choices=SEX_CHOICES)
-    resident_number = models.CharField(max_length=13, blank=True, null=True)
-    phone = models.CharField(max_length=11)
-    address = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    patient_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        verbose_name="환자 ID"
+    )
+    name = models.CharField(max_length=100, verbose_name="이름")
+    birth_date = models.DateField(verbose_name="생년월일")
+    sex = models.CharField(max_length=6, choices=SEX_CHOICES, verbose_name="성별")
+    resident_number = models.CharField(max_length=13, blank=True, null=True, verbose_name="주민등록번호")
+    phone = models.CharField(max_length=15, blank=True, null=True, verbose_name="전화번호")
+    address = models.CharField(max_length=255, blank=True, null=True, verbose_name="주소")
+    height = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="신장(cm)")
+    weight = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="체중(kg)")
+    id = models.CharField(max_length=150, unique=True, verbose_name="로그인 ID")
+    password = models.CharField(max_length=128, verbose_name="비밀번호")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="수정일")
 
     class Meta:
         managed = True
-        db_table = 'patients'
-        verbose_name = '환자'
-        verbose_name_plural = '환자'
+        db_table = "dbr_patients"
+        verbose_name = "환자"
+        verbose_name_plural = "환자 목록"
+
+    def __str__(self):
+        return f"{self.name} ({self.patient_id})"
 
 
-class MedicalRecords(models.Model):
-    record_id = models.AutoField(primary_key=True)
-    visit_date = models.DateTimeField()
-    chief_complatint = models.CharField(max_length=255, blank=True, null=True)
-    subjective_note = models.TextField(blank=True, null=True)
-    objective_note = models.TextField(blank=True, null=True)
-    assessment = models.TextField(blank=True, null=True)
-    plan = models.TextField(blank=True, null=True)
-    patient = models.ForeignKey(Patients, models.DO_NOTHING, db_column='patient_id')
-
-    class Meta:
-        managed = True
-        db_table = 'medical_records'
-        verbose_name = '진료 기록'
-        verbose_name_plural = '진료 기록'
-
-
-class BloodResults(models.Model):
-    blood_id = models.AutoField(primary_key=True)
-    ast = models.DecimalField(db_column='AST', max_digits=10, decimal_places=2, blank=True, null=True)
-    alt = models.DecimalField(db_column='ALT', max_digits=10, decimal_places=2, blank=True, null=True)
-    alp = models.DecimalField(db_column='ALP', max_digits=10, decimal_places=2, blank=True, null=True)
-    ggt = models.DecimalField(db_column='GGT', max_digits=10, decimal_places=2, blank=True, null=True)
-    bilirubin = models.DecimalField(db_column='Bilirubin', max_digits=10, decimal_places=2, blank=True, null=True)
-    albumin = models.DecimalField(db_column='Albumin', max_digits=10, decimal_places=2, blank=True, null=True)
-    inr = models.DecimalField(db_column='INR', max_digits=10, decimal_places=3, blank=True, null=True)
-    platelet = models.DecimalField(db_column='Platelet', max_digits=10, decimal_places=2, blank=True, null=True)
-    afp = models.DecimalField(db_column='AFP', max_digits=10, decimal_places=2, blank=True, null=True)
-    taken_at = models.DateTimeField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    record = models.ForeignKey(MedicalRecords, models.DO_NOTHING, db_column='record_id')
+# ----------------------------------------
+# 2️⃣ 혈액검사 결과 테이블 (dbr_blood_results)
+# ----------------------------------------
+class DbrBloodResults(models.Model):
+    blood_result_id = models.AutoField(primary_key=True)
+    patient = models.ForeignKey(
+        DbrPatients,
+        on_delete=models.CASCADE,
+        related_name="blood_results",
+        db_column="patient_id",
+        verbose_name="환자 ID"
+    )
+    ast = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    alt = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    alp = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    ggt = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    bilirubin = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    albumin = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    inr = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    platelet = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    afp = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    albi = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    taken_at = models.DateField(verbose_name="검사일자")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일")
 
     class Meta:
         managed = True
-        db_table = 'blood_results'
-        verbose_name = '혈액 검사'
-        verbose_name_plural = '혈액 검사'
+        db_table = "dbr_blood_results"
+        verbose_name = "혈액검사 결과"
+        verbose_name_plural = "혈액검사 결과 목록"
+
+    def __str__(self):
+        return f"{self.patient.name} - {self.taken_at}"
 
 
-class MedicalDiagnosis(models.Model):
-    diagnosis_id = models.AutoField(primary_key=True)
-    icd_code = models.CharField(max_length=10, blank=True, null=True)
-    diagnosis_name = models.CharField(max_length=255, blank=True, null=True)
-    is_primary = models.BooleanField(blank=True, null=True)
-    record = models.ForeignKey(MedicalRecords, models.DO_NOTHING, db_column='record_id')
-
-    class Meta:
-        managed = True
-        db_table = 'medical_diagnosis'
-        verbose_name = '진단'
-        verbose_name_plural = '진단'
-
-
-class MedicalVitals(models.Model):
-    vital_id = models.AutoField(primary_key=True)
-    height = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    weight = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    bp_systolic = models.IntegerField(blank=True, null=True)
-    bp_diastolic = models.IntegerField(blank=True, null=True)
-    heart_rate = models.IntegerField(blank=True, null=True)
-    resp_rate = models.IntegerField(blank=True, null=True)
-    temperature = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
-    oxygen_saturation = models.IntegerField(blank=True, null=True)
-    measured_at = models.DateTimeField(blank=True, null=True)
-    record = models.ForeignKey(MedicalRecords, models.DO_NOTHING, db_column='record_id')
+# ----------------------------------------
+# 3️⃣ 혈액검사 기준 테이블 (dbr_blood_test_references)
+# ----------------------------------------
+class DbrBloodTestReferences(models.Model):
+    reference_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, verbose_name="검사 항목명")
+    normal_range_min = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    normal_range_max = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    unit = models.CharField(max_length=20, blank=True, null=True, verbose_name="단위")
+    description = models.TextField(blank=True, null=True, verbose_name="설명")
 
     class Meta:
         managed = True
-        db_table = 'medical_vitals'
-        verbose_name = '활력 징후'
-        verbose_name_plural = '활력 징후'
+        db_table = "dbr_blood_test_references"
+        verbose_name = "혈액검사 기준"
+        verbose_name_plural = "혈액검사 기준 목록"
+
+    def __str__(self):
+        return f"{self.name} ({self.unit or '-'})"
 
 
-class NursingNotes(models.Model):
-    NOTE_TYPE_CHOICES = [
-        ('monitoring', '모니터링'),
-        ('intervention', '처치'),
-        ('education', '교육'),
-        ('report', '보고'),
-    ]
-    ABNORMAL_FLAG_CHOICES = [
-        ('normal', '정상'),
-        ('abnormal', '이상'),
+# ----------------------------------------
+# 4️⃣ 일정관리 테이블 (dbr_appointments)
+# ----------------------------------------
+class DbrAppointments(models.Model):
+    APPOINTMENT_TYPE_CHOICES = [
+        ('blood_test', '혈액검사'),
+        ('ct', 'CT 검사'),
+        ('mri', 'MRI 검사'),
+        ('ultrasound', '초음파 검사'),
+        ('consultation', '진료 상담'),
+        ('other', '기타'),
     ]
 
-    note_id = models.AutoField(primary_key=True)
-    note_type = models.CharField(max_length=20, choices=NOTE_TYPE_CHOICES, blank=True, null=True)
-    subjective_note = models.TextField(blank=True, null=True)
-    objective_note = models.TextField(blank=True, null=True)
-    assessment = models.TextField(blank=True, null=True)
-    plan = models.TextField(blank=True, null=True)
-    intervention = models.TextField(blank=True, null=True)
-    abnormal_flag = models.CharField(max_length=8, choices=ABNORMAL_FLAG_CHOICES, blank=True, null=True)
-    next_action = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    record = models.ForeignKey(MedicalRecords, models.DO_NOTHING, db_column='record_id')
+    STATUS_CHOICES = [
+        ('scheduled', '예정'),
+        ('completed', '완료'),
+        ('cancelled', '취소'),
+    ]
+
+    appointment_id = models.AutoField(primary_key=True)
+    patient = models.ForeignKey(
+        DbrPatients,
+        on_delete=models.CASCADE,
+        related_name="appointments",
+        db_column="patient_id",
+        verbose_name="환자 ID"
+    )
+    appointment_date = models.DateField(verbose_name="검사 일정")
+    appointment_time = models.TimeField(blank=True, null=True, verbose_name="검사 시간")
+    hospital = models.CharField(max_length=100, verbose_name="병원명")
+    appointment_type = models.CharField(
+        max_length=20,
+        choices=APPOINTMENT_TYPE_CHOICES,
+        default='blood_test',
+        verbose_name="검사 종류"
+    )
+    details = models.TextField(blank=True, null=True, verbose_name="자세한 내용")
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='scheduled',
+        verbose_name="상태"
+    )
+    reminder_enabled = models.BooleanField(default=True, verbose_name="알림 설정")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="수정일")
 
     class Meta:
         managed = True
-        db_table = 'nursing_notes'
-        verbose_name = '간호 기록'
-        verbose_name_plural = '간호 기록'
+        db_table = "dbr_appointments"
+        verbose_name = "검사 일정"
+        verbose_name_plural = "검사 일정 목록"
+        ordering = ['appointment_date', 'appointment_time']
 
-
-class DeseaseManage(models.Model):
-    desease_manage_id = models.BigAutoField(primary_key=True)
-    diagnosis_date = models.DateField(blank=True, null=True)
-    bclc_stage = models.CharField(max_length=10, blank=True, null=True)
-    tumor_size = models.FloatField(blank=True, null=True)
-    tumor_count = models.IntegerField(blank=True, null=True)
-    vascular_invasion = models.BooleanField(default=False)
-    child_pugh = models.CharField(max_length=1, blank=True, null=True)
-    afp_initial = models.FloatField(blank=True, null=True)
-    afp_current = models.FloatField(blank=True, null=True)
-    treatment_type = models.CharField(max_length=50, blank=True, null=True)
-    treatment_start_date = models.DateField(blank=True, null=True)
-    recurrence_risk = models.CharField(max_length=10, blank=True, null=True)
-    doctor = models.CharField(max_length=10, blank=True, null=True)
-    hospital = models.CharField(max_length=10, blank=True, null=True)
-    patient = models.ForeignKey(Patients, models.DO_NOTHING, db_column='patient_id')
-
-    class Meta:
-        managed = True
-        db_table = 'desease_manage'
-        verbose_name = '질병 관리'
-        verbose_name_plural = '질병 관리'
+    def __str__(self):
+        return f"{self.patient.name} - {self.hospital} ({self.appointment_date})"
 
