@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "dashboard",
     'corsheaders',
     "django_extensions",
+    'drf_yasg',
 ]
 
 REST_FRAMEWORK = {
