@@ -21,6 +21,9 @@ from drf_yasg import openapi
 # Auth view
 # sign up view
 class DbrPatientRegisterView(APIView):
+    permission_classes = [AllowAny] 
+    authentication_classes = []
+
     @swagger_auto_schema(
         operation_description="환자 회원가입 API",
         operation_summary="회원가입",
