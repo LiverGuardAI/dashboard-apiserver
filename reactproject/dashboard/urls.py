@@ -11,6 +11,8 @@ from .views import (
     # 공지사항
     AnnouncementListView, AnnouncementDetailView, 
     DbrPatientRegisterView, DbrPatientLoginView, DbrPatientUserView, DbrPatientLogoutView,
+    # Dashboard
+    DashboardGraphsView,
 )
 
 urlpatterns = [
@@ -19,6 +21,9 @@ urlpatterns = [
     path("auth/login/", DbrPatientLoginView.as_view(), name="patient-login"),
     path("auth/user/", DbrPatientUserView.as_view(), name="patient-user"),
     path("auth/logout/", DbrPatientLogoutView.as_view(), name="patient-logout"),
+    
+    # ==================== Dashboard ====================
+    path('dashboard/graphs/', DashboardGraphsView.as_view(), name='dashboard-graphs'),
     
     # ==================== 환자 ====================
     path('patients/', PatientListView.as_view(), name='patient-list'),

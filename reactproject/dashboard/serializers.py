@@ -15,7 +15,7 @@ class DbrPatientRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = DbrPatients
         fields = [
-            "id", "password", "password2",
+            "user_id", "password", "password2",
             "name", "birth_date", "sex", "phone"
         ]
         extra_kwargs = {

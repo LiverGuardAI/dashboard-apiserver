@@ -175,3 +175,56 @@ class AnnouncementDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'announcements_id'
 
 
+
+
+# ==================== Dashboard Graph Views ====================
+from .dashboard_bar import generate_risk_bar
+from django.http import JsonResponse
+
+class DashboardGraphsView(APIView):
+    """
+    현재 로그인한 환자의 최신 혈액검사 결과로 4개의 그래프 생성
+    """
+    authentication_classes = [PatientJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        try:
+            patient = request.user
+            
+            # 최신 혈액검사 결과 가져오기
+            latest_result = DbrBloodResults.objects.filter(
+                patient=patient
+            ).order_by('-taken_at').first()
+            
+            if not latest_result:
+                return Response(
+                    {"error": "혈액검사 결과가 없습니다."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # 4개의 그래프 생성 (albumin, bilirubin, inr, platelet 순서)
+            graphs = {}
+            indicators = ['albumin', 'bilirubin', 'inr', 'platelet']
+            
+            for indicator in indicators:
+                value = getattr(latest_result, indicator, None)
+                
+                if value is None:
+                    graphs[indicator] = None
+                else:
+                    # base64 이미지 생성
+                    img_base64 = generate_risk_bar(indicator, float(value))
+                    graphs[indicator] = f"data:image/png;base64,{img_base64}"
+            
+            return Response({
+                "patient_name": patient.name,
+                "test_date": latest_result.taken_at,
+                "graphs": graphs
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
