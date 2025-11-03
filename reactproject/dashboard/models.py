@@ -40,7 +40,7 @@ class DbrPatients(models.Model):
     address = models.CharField(max_length=255, blank=True, null=True, verbose_name="주소")
     height = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="신장(cm)")
     weight = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="체중(kg)")
-    id = models.CharField(max_length=150, unique=True, verbose_name="로그인 ID")
+    user_id = models.CharField(max_length=150, unique=True, verbose_name="로그인 ID")
     password = models.CharField(max_length=128, verbose_name="비밀번호")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="수정일")
@@ -52,8 +52,12 @@ class DbrPatients(models.Model):
         verbose_name_plural = "환자 목록"
 
     def __str__(self):
-        return f"{self.name} ({self.patient_id})"
+        return f"{self.name} ({self.user_id})"
 
+    @property
+    def is_authenticated(self):
+        """DRF의 IsAuthenticated 권한 검사용"""
+        return True
 
 # ----------------------------------------
 # 2️⃣ 혈액검사 결과 테이블 (dbr_blood_results)

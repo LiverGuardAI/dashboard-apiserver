@@ -32,6 +32,7 @@ DEBUG = True
 
 import os
 from django.core.exceptions import ImproperlyConfigured
+from datetime import timedelta
 
 def get_env_list(var_name, default=None):
     value = os.getenv(var_name)
@@ -52,10 +53,29 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'rest_framework',
+    "rest_framework_simplejwt",
     "dashboard",
     'corsheaders',
     "django_extensions",
 ]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    )
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "USER_ID_FIELD": "patient_id",
+    "USER_ID_CLAIM": "patient_id",  
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -128,7 +148,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "ko-kr"
 
-TIME_ZONE = "UTF-8"
+TIME_ZONE = "Asia/Seoul"
 
 USE_I18N = True
 

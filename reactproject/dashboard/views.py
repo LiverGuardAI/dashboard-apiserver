@@ -5,15 +5,19 @@ from rest_framework import generics
 from .models import DbrPatients, DbrBloodResults, DbrAppointments, DbrBloodTestReferences, Announcements
 from .serializers import (
     PatientSerializer, BloodResultSerializer, AppointmentSerializer,
-    BloodTestReferenceSerializer, AnnouncementSerializer, DbrPatientRegisterSerializer
+    BloodTestReferenceSerializer, AnnouncementSerializer, 
+    DbrPatientRegisterSerializer, DbrPatientLoginSerializer,
 )
+from dashboard.authentication import PatientJWTAuthentication
 from rest_framework import status
 from django.contrib.auth import authenticate, login
 from rest_framework.decorators import api_view
 from django.contrib.auth.hashers import check_password
-
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Auth view
+# sign up view
 class DbrPatientRegisterView(APIView):
     def post(self, request):
         serializer = DbrPatientRegisterSerializer(data=request.data)
@@ -24,6 +28,32 @@ class DbrPatientRegisterView(APIView):
             print("❌ Serializer errors:", serializer.errors)  # 🔥 여기에 실제 원인 표시
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# login view
+class DbrPatientLoginView(APIView):
+    permission_classes = [AllowAny] 
+    authentication_classes = []
+    
+    def post(self, request):
+        serializer = DbrPatientLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        print("❌ Login Serializer errors:", serializer.errors)  # 🔥 여기에 실제 원인 표시
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# 🔹 현재 로그인된 사용자 조회 (auth/user)
+class DbrPatientUserView(APIView):
+    authentication_classes = [PatientJWTAuthentication]  # ✅ 커스텀 인증
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "patient_id": str(user.patient_id),
+            "user_id": user.user_id,
+            "name": user.name,
+            "sex": user.sex,
+            "phone": user.phone,
+        })
 
 # ==================== 환자 관련 Views ====================
 class PatientListView(generics.ListCreateAPIView):

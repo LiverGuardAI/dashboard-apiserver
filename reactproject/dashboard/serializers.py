@@ -1,10 +1,11 @@
 # liverguard/serializers.py
 from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 from .models import DbrPatients, DbrBloodResults, DbrAppointments, DbrBloodTestReferences, Announcements
-
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Auth serializers
+# sign up serializers
 class DbrPatientRegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True)
     birth_date = serializers.DateField(
@@ -20,17 +21,44 @@ class DbrPatientRegisterSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "password": {"write_only": True},
         }
-
     def validate(self, data):
         if data["password"] != data["password2"]:
             raise serializers.ValidationError({"password": "비밀번호가 일치하지 않습니다."})
         return data
-
     def create(self, validated_data):
         validated_data.pop("password2")
         validated_data["password"] = make_password(validated_data["password"])
         return DbrPatients.objects.create(**validated_data)
 
+# login serializers
+class DbrPatientLoginSerializer(serializers.Serializer):
+    user_id = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        user_id = data.get("user_id")
+        password = data.get("password")
+        try:
+            user = DbrPatients.objects.get(user_id=user_id)
+        except DbrPatients.DoesNotExist:
+            raise serializers.ValidationError({"user_id": "존재하지 않는 사용자입니다."})
+
+        if not check_password(password, user.password):
+            raise serializers.ValidationError({"password": "비밀번호가 올바르지 않습니다."})
+
+        # ✅ 인증 성공 시 JWT 발급
+        refresh = RefreshToken.for_user(user)
+
+        return {
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "user": {
+                "user_id": user.user_id,
+                "name": user.name,
+                "sex": user.sex,
+                "phone": user.phone,
+            },
+        }
 
 class PatientSerializer(serializers.ModelSerializer):
     class Meta:
