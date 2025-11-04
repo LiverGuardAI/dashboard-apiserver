@@ -59,6 +59,11 @@ class DbrPatients(models.Model):
         """DRF의 IsAuthenticated 권한 검사용"""
         return True
 
+    @property
+    def is_active(self):
+        """JWT 토큰 발급을 위해 필수"""
+        return True
+
 # ----------------------------------------
 # 2️⃣ 혈액검사 결과 테이블 (dbr_blood_results)
 # ----------------------------------------

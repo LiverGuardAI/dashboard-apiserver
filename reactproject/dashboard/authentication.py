@@ -11,15 +11,15 @@ class PatientJWTAuthentication(JWTAuthentication):
     def get_user(self, validated_token):
         try:
             patient_id = validated_token.get("patient_id")
-            print("🔍 [DEBUG] patient_id from token:", patient_id)  # 디버그용
+            print("[DEBUG] patient_id from token:", patient_id)
 
             user = DbrPatients.objects.get(patient_id=patient_id)
-            print("✅ [DEBUG] Authenticated user:", user)
+            print("[DEBUG] Authenticated user:", user)
             return user
 
         except DbrPatients.DoesNotExist:
-            print("❌ [DEBUG] DbrPatients.DoesNotExist")
+            print("[DEBUG] DbrPatients.DoesNotExist")
             return None
         except Exception as e:
-            print("❌ [DEBUG] Unexpected error in get_user:", e)
+            print("[DEBUG] Unexpected error in get_user:", e)
             return None

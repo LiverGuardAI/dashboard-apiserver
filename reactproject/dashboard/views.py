@@ -197,8 +197,10 @@ class DbrPatientUserView(APIView):
             "patient_id": str(user.patient_id),
             "user_id": user.user_id,
             "name": user.name,
+            "birth_date": user.birth_date,
             "sex": user.sex,
-            "phone": user.phone,
+            "height": user.height,
+            "weight": user.weight,
         })
 
 
@@ -302,6 +304,8 @@ class AppointmentListView(generics.ListCreateAPIView):
     """일정 목록 조회 및 생성"""
     queryset = DbrAppointments.objects.all().select_related('patient')
     serializer_class = AppointmentSerializer
+    authentication_classes = [PatientJWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(tags=["Appointments"], operation_summary="일정 목록 조회")
     def get(self, request, *args, **kwargs):
@@ -317,6 +321,8 @@ class AppointmentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = DbrAppointments.objects.all().select_related('patient')
     serializer_class = AppointmentSerializer
     lookup_field = 'appointment_id'
+    authentication_classes = [PatientJWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(tags=["Appointments"], operation_summary="일정 상세 조회")
     def get(self, request, *args, **kwargs):
@@ -338,6 +344,8 @@ class AppointmentDetailView(generics.RetrieveUpdateDestroyAPIView):
 class PatientAppointmentsView(generics.ListAPIView):
     """특정 환자의 일정 목록 조회"""
     serializer_class = AppointmentSerializer
+    authentication_classes = [PatientJWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(tags=["Appointments"], operation_summary="특정 환자의 일정 목록 조회")
     def get(self, request, *args, **kwargs):
