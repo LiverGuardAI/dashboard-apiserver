@@ -52,11 +52,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'corsheaders',
     'rest_framework',
     "rest_framework_simplejwt",
     # "rest_framework_simplejwt.token_blacklist",
     "dashboard",
-    'corsheaders',
     "django_extensions",
     'drf_yasg',
 ]
@@ -178,12 +178,14 @@ AUTHENTICATION_BACKENDS = [
 # React 개발 서버(3000번 포트)에서 오는 요청 허용
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
-
+CORS_ALLOW_ALL_ORIGINS = True
 # React에서 로그인 세션(cookie) 포함하려면
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF 관련 신뢰 도메인 (세션 기반일 경우 필수)
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
