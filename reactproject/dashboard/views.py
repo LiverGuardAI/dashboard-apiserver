@@ -5,7 +5,7 @@ from rest_framework import generics
 from .models import DbrPatients, DbrBloodResults, DbrAppointments, DbrBloodTestReferences
 from .serializers import (
     PatientSerializer, BloodResultSerializer, AppointmentSerializer,
-    BloodTestReferenceSerializer
+    BloodTestReferenceSerializer,
     DbrPatientRegisterSerializer, DbrPatientLoginSerializer,
 )
 from dashboard.authentication import PatientJWTAuthentication

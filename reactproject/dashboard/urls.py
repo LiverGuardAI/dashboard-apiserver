@@ -8,8 +8,7 @@ from .views import (
     AppointmentListView, AppointmentDetailView, PatientAppointmentsView,
     # 혈액검사 기준
     BloodTestReferenceListView, BloodTestReferenceDetailView,
-    # 공지사항
-    AnnouncementListView, AnnouncementDetailView, 
+    # Auth
     DbrPatientRegisterView, DbrPatientLoginView, DbrPatientUserView, DbrPatientLogoutView,
     # Dashboard
     DashboardGraphsView,
@@ -42,5 +41,4 @@ urlpatterns = [
     # ==================== 혈액검사 기준 ====================
     path('blood-test-references/', BloodTestReferenceListView.as_view(), name='blood-test-reference-list'),
     path('blood-test-references/<int:reference_id>/', BloodTestReferenceDetailView.as_view(), name='blood-test-reference-detail'),
-
-
+]
