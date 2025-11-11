@@ -43,7 +43,4 @@ urlpatterns = [
     path('blood-test-references/', BloodTestReferenceListView.as_view(), name='blood-test-reference-list'),
     path('blood-test-references/<int:reference_id>/', BloodTestReferenceDetailView.as_view(), name='blood-test-reference-detail'),
 
-    # ==================== 공지사항 ====================
-    path('announcements/', AnnouncementListView.as_view(), name='announcement-list'),
-    path('announcements/<int:announcements_id>/', AnnouncementDetailView.as_view(), name='announcement-detail'),
-]
+

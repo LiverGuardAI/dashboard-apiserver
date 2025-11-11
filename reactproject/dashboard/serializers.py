@@ -1,7 +1,7 @@
 # liverguard/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password, check_password
-from .models import DbrPatients, DbrBloodResults, DbrAppointments, DbrBloodTestReferences, Announcements
+from .models import DbrPatients, DbrBloodResults, DbrAppointments, DbrBloodTestReferences, 
 from rest_framework_simplejwt.tokens import RefreshToken
 
 # Auth serializers
@@ -93,10 +93,3 @@ class BloodTestReferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = DbrBloodTestReferences
         fields = '__all__'
-
-
-class AnnouncementSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Announcements
-        fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']

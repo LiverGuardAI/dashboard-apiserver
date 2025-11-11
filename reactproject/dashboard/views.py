@@ -2,10 +2,10 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import generics
-from .models import DbrPatients, DbrBloodResults, DbrAppointments, DbrBloodTestReferences, Announcements
+from .models import DbrPatients, DbrBloodResults, DbrAppointments, DbrBloodTestReferences
 from .serializers import (
     PatientSerializer, BloodResultSerializer, AppointmentSerializer,
-    BloodTestReferenceSerializer, AnnouncementSerializer,
+    BloodTestReferenceSerializer
     DbrPatientRegisterSerializer, DbrPatientLoginSerializer,
 )
 from dashboard.authentication import PatientJWTAuthentication
@@ -392,46 +392,6 @@ class BloodTestReferenceDetailView(generics.RetrieveUpdateDestroyAPIView):
     @swagger_auto_schema(tags=["Blood Test References"], operation_summary="혈액검사 기준 삭제")
     def delete(self, request, *args, **kwargs):
         return super().delete(request, *args, **kwargs)
-
-
-# ==================== 공지사항 관련 Views ====================
-class AnnouncementListView(generics.ListCreateAPIView):
-    """공지사항 목록 조회 및 생성"""
-    queryset = Announcements.objects.all().order_by('-created_at')
-    serializer_class = AnnouncementSerializer
-
-    @swagger_auto_schema(tags=["Announcements"], operation_summary="공지사항 목록 조회")
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    @swagger_auto_schema(tags=["Announcements"], operation_summary="공지사항 등록")
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
-
-
-class AnnouncementDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """공지사항 상세 조회, 수정, 삭제"""
-    queryset = Announcements.objects.all()
-    serializer_class = AnnouncementSerializer
-    lookup_field = 'announcements_id'
-
-    @swagger_auto_schema(tags=["Announcements"], operation_summary="공지사항 상세 조회")
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    @swagger_auto_schema(tags=["Announcements"], operation_summary="공지사항 수정")
-    def put(self, request, *args, **kwargs):
-        return super().put(request, *args, **kwargs)
-
-    @swagger_auto_schema(tags=["Announcements"], operation_summary="공지사항 부분 수정")
-    def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs)
-
-    @swagger_auto_schema(tags=["Announcements"], operation_summary="공지사항 삭제")
-    def delete(self, request, *args, **kwargs):
-        return super().delete(request, *args, **kwargs)
-
-
 
 
 # ==================== Dashboard Graph Views ====================
