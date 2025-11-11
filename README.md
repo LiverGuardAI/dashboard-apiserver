@@ -7,6 +7,7 @@ Django REST API server for React Project
 - 신종혁
 - 정예진
 - 장보윤
+- 장재호
 
 ## Tech Stack
 - Django 5.2.7
