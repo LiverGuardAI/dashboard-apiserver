@@ -3,7 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth.hashers import make_password, check_password
 from .models import (
     DbrPatients, DbrBloodResults, DbrAppointments, DbrBloodTestReferences,
-    Medication, MedicationLog, MedicalFacility, FavoriteFacility
+    Medication, MedicationLog,
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -118,23 +118,23 @@ class MedicationLogSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at']
 
 
-# ==================== 의료기관 관련 Serializers ====================
-class MedicalFacilitySerializer(serializers.ModelSerializer):
-    type_display = serializers.CharField(source='get_type_display', read_only=True)
+# # ==================== 의료기관 관련 Serializers ====================
+# class MedicalFacilitySerializer(serializers.ModelSerializer):
+#     type_display = serializers.CharField(source='get_type_display', read_only=True)
 
-    class Meta:
-        model = MedicalFacility
-        fields = '__all__'
-        read_only_fields = ['created_at']
+#     class Meta:
+#         model = MedicalFacility
+#         fields = '__all__'
+#         read_only_fields = ['created_at']
 
 
-class FavoriteFacilitySerializer(serializers.ModelSerializer):
-    patient_name = serializers.CharField(source='patient.name', read_only=True)
-    facility_name = serializers.CharField(source='facility.name', read_only=True)
-    facility_type = serializers.CharField(source='facility.type', read_only=True)
-    facility_address = serializers.CharField(source='facility.address', read_only=True)
+# class FavoriteFacilitySerializer(serializers.ModelSerializer):
+#     patient_name = serializers.CharField(source='patient.name', read_only=True)
+#     facility_name = serializers.CharField(source='facility.name', read_only=True)
+#     facility_type = serializers.CharField(source='facility.type', read_only=True)
+#     facility_address = serializers.CharField(source='facility.address', read_only=True)
 
-    class Meta:
-        model = FavoriteFacility
-        fields = '__all__'
-        read_only_fields = ['created_at']
+#     class Meta:
+#         model = FavoriteFacility
+#         fields = '__all__'
+#         read_only_fields = ['created_at']

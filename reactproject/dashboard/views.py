@@ -4,14 +4,13 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from .models import (
     DbrPatients, DbrBloodResults, DbrAppointments, DbrBloodTestReferences,
-    Medication, MedicationLog, MedicalFacility, FavoriteFacility
+    Medication, MedicationLog,
 )
 from .serializers import (
     PatientSerializer, BloodResultSerializer, AppointmentSerializer,
     BloodTestReferenceSerializer,
     DbrPatientRegisterSerializer, DbrPatientLoginSerializer,
     MedicationSerializer, MedicationLogSerializer,
-    MedicalFacilitySerializer, FavoriteFacilitySerializer,
 )
 from dashboard.authentication import PatientJWTAuthentication
 from rest_framework import status
@@ -625,92 +624,92 @@ class MedicationLogDetailView(generics.RetrieveUpdateDestroyAPIView):
         return super().delete(request, *args, **kwargs)
 
 
-# ==================== 의료기관 관련 Views ====================
-class MedicalFacilityListView(generics.ListCreateAPIView):
-    """의료기관 목록 조회 및 생성"""
-    queryset = MedicalFacility.objects.all()
-    serializer_class = MedicalFacilitySerializer
-    authentication_classes = [PatientJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+# # ==================== 의료기관 관련 Views ====================
+# class MedicalFacilityListView(generics.ListCreateAPIView):
+#     """의료기관 목록 조회 및 생성"""
+#     queryset = MedicalFacility.objects.all()
+#     serializer_class = MedicalFacilitySerializer
+#     authentication_classes = [PatientJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(tags=["Medical Facilities"], operation_summary="의료기관 목록 조회")
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+#     @swagger_auto_schema(tags=["Medical Facilities"], operation_summary="의료기관 목록 조회")
+#     def get(self, request, *args, **kwargs):
+#         return super().get(request, *args, **kwargs)
 
-    @swagger_auto_schema(tags=["Medical Facilities"], operation_summary="의료기관 등록")
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
-
-
-class MedicalFacilityDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """의료기관 상세 조회, 수정, 삭제"""
-    queryset = MedicalFacility.objects.all()
-    serializer_class = MedicalFacilitySerializer
-    lookup_field = 'facility_id'
-    authentication_classes = [PatientJWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(tags=["Medical Facilities"], operation_summary="의료기관 상세 조회")
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    @swagger_auto_schema(tags=["Medical Facilities"], operation_summary="의료기관 정보 수정")
-    def put(self, request, *args, **kwargs):
-        return super().put(request, *args, **kwargs)
-
-    @swagger_auto_schema(tags=["Medical Facilities"], operation_summary="의료기관 정보 부분 수정")
-    def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs)
-
-    @swagger_auto_schema(tags=["Medical Facilities"], operation_summary="의료기관 삭제")
-    def delete(self, request, *args, **kwargs):
-        return super().delete(request, *args, **kwargs)
+#     @swagger_auto_schema(tags=["Medical Facilities"], operation_summary="의료기관 등록")
+#     def post(self, request, *args, **kwargs):
+#         return super().post(request, *args, **kwargs)
 
 
-# ==================== 즐겨찾기 관련 Views ====================
-class FavoriteFacilityListView(generics.ListCreateAPIView):
-    """즐겨찾기 목록 조회 및 생성"""
-    queryset = FavoriteFacility.objects.all().select_related('patient', 'facility')
-    serializer_class = FavoriteFacilitySerializer
-    authentication_classes = [PatientJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+# class MedicalFacilityDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     """의료기관 상세 조회, 수정, 삭제"""
+#     queryset = MedicalFacility.objects.all()
+#     serializer_class = MedicalFacilitySerializer
+#     lookup_field = 'facility_id'
+#     authentication_classes = [PatientJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(tags=["Favorite Facilities"], operation_summary="즐겨찾기 목록 조회")
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+#     @swagger_auto_schema(tags=["Medical Facilities"], operation_summary="의료기관 상세 조회")
+#     def get(self, request, *args, **kwargs):
+#         return super().get(request, *args, **kwargs)
 
-    @swagger_auto_schema(tags=["Favorite Facilities"], operation_summary="즐겨찾기 추가")
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+#     @swagger_auto_schema(tags=["Medical Facilities"], operation_summary="의료기관 정보 수정")
+#     def put(self, request, *args, **kwargs):
+#         return super().put(request, *args, **kwargs)
 
+#     @swagger_auto_schema(tags=["Medical Facilities"], operation_summary="의료기관 정보 부분 수정")
+#     def patch(self, request, *args, **kwargs):
+#         return super().patch(request, *args, **kwargs)
 
-class FavoriteFacilityDetailView(generics.RetrieveDestroyAPIView):
-    """즐겨찾기 상세 조회, 삭제"""
-    queryset = FavoriteFacility.objects.all().select_related('patient', 'facility')
-    serializer_class = FavoriteFacilitySerializer
-    lookup_field = 'favorite_id'
-    authentication_classes = [PatientJWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(tags=["Favorite Facilities"], operation_summary="즐겨찾기 상세 조회")
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    @swagger_auto_schema(tags=["Favorite Facilities"], operation_summary="즐겨찾기 삭제")
-    def delete(self, request, *args, **kwargs):
-        return super().delete(request, *args, **kwargs)
+#     @swagger_auto_schema(tags=["Medical Facilities"], operation_summary="의료기관 삭제")
+#     def delete(self, request, *args, **kwargs):
+#         return super().delete(request, *args, **kwargs)
 
 
-class PatientFavoriteFacilitiesView(generics.ListAPIView):
-    """특정 환자의 즐겨찾기 목록 조회"""
-    serializer_class = FavoriteFacilitySerializer
-    authentication_classes = [PatientJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+# # ==================== 즐겨찾기 관련 Views ====================
+# class FavoriteFacilityListView(generics.ListCreateAPIView):
+#     """즐겨찾기 목록 조회 및 생성"""
+#     queryset = FavoriteFacility.objects.all().select_related('patient', 'facility')
+#     serializer_class = FavoriteFacilitySerializer
+#     authentication_classes = [PatientJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(tags=["Favorite Facilities"], operation_summary="특정 환자의 즐겨찾기 목록 조회")
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+#     @swagger_auto_schema(tags=["Favorite Facilities"], operation_summary="즐겨찾기 목록 조회")
+#     def get(self, request, *args, **kwargs):
+#         return super().get(request, *args, **kwargs)
 
-    def get_queryset(self):
-        patient_id = self.kwargs['patient_id']
-        return FavoriteFacility.objects.filter(patient_id=patient_id).select_related('facility')
+#     @swagger_auto_schema(tags=["Favorite Facilities"], operation_summary="즐겨찾기 추가")
+#     def post(self, request, *args, **kwargs):
+#         return super().post(request, *args, **kwargs)
+
+
+# class FavoriteFacilityDetailView(generics.RetrieveDestroyAPIView):
+#     """즐겨찾기 상세 조회, 삭제"""
+#     queryset = FavoriteFacility.objects.all().select_related('patient', 'facility')
+#     serializer_class = FavoriteFacilitySerializer
+#     lookup_field = 'favorite_id'
+#     authentication_classes = [PatientJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     @swagger_auto_schema(tags=["Favorite Facilities"], operation_summary="즐겨찾기 상세 조회")
+#     def get(self, request, *args, **kwargs):
+#         return super().get(request, *args, **kwargs)
+
+#     @swagger_auto_schema(tags=["Favorite Facilities"], operation_summary="즐겨찾기 삭제")
+#     def delete(self, request, *args, **kwargs):
+#         return super().delete(request, *args, **kwargs)
+
+
+# class PatientFavoriteFacilitiesView(generics.ListAPIView):
+#     """특정 환자의 즐겨찾기 목록 조회"""
+#     serializer_class = FavoriteFacilitySerializer
+#     authentication_classes = [PatientJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     @swagger_auto_schema(tags=["Favorite Facilities"], operation_summary="특정 환자의 즐겨찾기 목록 조회")
+#     def get(self, request, *args, **kwargs):
+#         return super().get(request, *args, **kwargs)
+
+#     def get_queryset(self):
+#         patient_id = self.kwargs['patient_id']
+#         return FavoriteFacility.objects.filter(patient_id=patient_id).select_related('facility')

@@ -17,9 +17,9 @@ from .views import (
     # 복용 기록
     MedicationLogListView, MedicationLogDetailView,
     # 의료기관
-    MedicalFacilityListView, MedicalFacilityDetailView,
+    # MedicalFacilityListView, MedicalFacilityDetailView,
     # 즐겨찾기
-    FavoriteFacilityListView, FavoriteFacilityDetailView, PatientFavoriteFacilitiesView,
+    # FavoriteFacilityListView, FavoriteFacilityDetailView, PatientFavoriteFacilitiesView,
 )
 
 urlpatterns = [
@@ -61,11 +61,11 @@ urlpatterns = [
     path('medication-logs/<int:log_id>/', MedicationLogDetailView.as_view(), name='medication-log-detail'),
 
     # ==================== 의료기관 ====================
-    path('medical-facilities/', MedicalFacilityListView.as_view(), name='medical-facility-list'),
-    path('medical-facilities/<int:facility_id>/', MedicalFacilityDetailView.as_view(), name='medical-facility-detail'),
+    # path('medical-facilities/', MedicalFacilityListView.as_view(), name='medical-facility-list'),
+    # path('medical-facilities/<int:facility_id>/', MedicalFacilityDetailView.as_view(), name='medical-facility-detail'),
 
     # ==================== 즐겨찾기 ====================
-    path('favorite-facilities/', FavoriteFacilityListView.as_view(), name='favorite-facility-list'),
-    path('favorite-facilities/<int:favorite_id>/', FavoriteFacilityDetailView.as_view(), name='favorite-facility-detail'),
-    path('patients/<uuid:patient_id>/favorite-facilities/', PatientFavoriteFacilitiesView.as_view(), name='patient-favorite-facilities'),
+    # path('favorite-facilities/', FavoriteFacilityListView.as_view(), name='favorite-facility-list'),
+    # path('favorite-facilities/<int:favorite_id>/', FavoriteFacilityDetailView.as_view(), name='favorite-facility-detail'),
+    # path('patients/<uuid:patient_id>/favorite-facilities/', PatientFavoriteFacilitiesView.as_view(), name='patient-favorite-facilities'),
 ]
