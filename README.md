@@ -22,7 +22,7 @@ Django REST API server for React Project
 ## Database Configuration
 - Database: Dashboard
 - User: acorn
-- Host: 34.55.49.77
+- Host: 34.67.62.238
 - Port: 3306
 
 ## Getting Started
