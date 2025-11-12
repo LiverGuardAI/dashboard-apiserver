@@ -9,7 +9,7 @@ from .views import (
     # 혈액검사 기준
     BloodTestReferenceListView, BloodTestReferenceDetailView,
     # Auth
-    DbrPatientRegisterView, DbrPatientLoginView, DbrPatientUserView, DbrPatientLogoutView,
+    DbrPatientRegisterView, DbrPatientLoginView, DbrPatientLogoutView, DbrPatientUserView, DbrPatientTokenRefreshView,
     # Dashboard
     DashboardGraphsView,
     # 약물
@@ -26,8 +26,9 @@ urlpatterns = [
     # Auth view
     path("auth/register/", DbrPatientRegisterView.as_view(), name="patient-register"),
     path("auth/login/", DbrPatientLoginView.as_view(), name="patient-login"),
-    path("auth/user/", DbrPatientUserView.as_view(), name="patient-user"),
     path("auth/logout/", DbrPatientLogoutView.as_view(), name="patient-logout"),
+    path("auth/user/", DbrPatientUserView.as_view(), name="patient-user"),
+    path("auth/refresh/", DbrPatientTokenRefreshView.as_view(), name="patient_token_refresh"),
     
     # ==================== Dashboard ====================
     path('dashboard/graphs/', DashboardGraphsView.as_view(), name='dashboard-graphs'),

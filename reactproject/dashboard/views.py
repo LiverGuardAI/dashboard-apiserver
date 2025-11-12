@@ -19,11 +19,11 @@ from django.contrib.auth import authenticate, login
 from rest_framework.decorators import api_view
 from django.contrib.auth.hashers import check_password
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken, TokenError
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-# Auth view
+# =========================== Auth view ===========================
 # sign up view
 class DbrPatientRegisterView(APIView):
     permission_classes = [AllowAny] 
@@ -163,7 +163,6 @@ class DbrPatientLogoutView(APIView):
                 {"message": "로그아웃되었습니다."},
                 status=status.HTTP_205_RESET_CONTENT
             )
-
         except TokenError:
             return Response(
                 {"error": "유효하지 않은 refresh token입니다."},
@@ -207,6 +206,65 @@ class DbrPatientUserView(APIView):
             "height": user.height,
             "weight": user.weight,
         })
+
+# access token 재발급 view
+class DbrPatientTokenRefreshView(APIView):
+    """
+    JWT Refresh API
+    - refresh token으로 access token 재발급
+    """
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="access token 만료 시 refresh token으로 새로운 access token 발급",
+        operation_summary="토큰 재발급 (refresh)",
+        tags=["Auth"],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["refresh"],
+            properties={
+                "refresh": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="Refresh Token"
+                ),
+            },
+        ),
+        responses={
+            200: openapi.Response(
+                description="새로운 access token 발급 성공",
+                examples={
+                    "application/json": {
+                        "access": "new_access_token_string"
+                    }
+                }
+            ),
+            400: openapi.Response(
+                description="토큰 만료 또는 유효하지 않음",
+                examples={"application/json": {"error": "유효하지 않은 refresh token"}},
+            ),
+        },
+    )
+    def post(self, request):
+        refresh_token = request.data.get("refresh")
+
+        if not refresh_token:
+            return Response(
+                {"error": "refresh token이 필요합니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # ✅ 새 access token 발급
+            token = RefreshToken(refresh_token)
+            new_access = str(token.access_token)
+
+            return Response({"access": new_access}, status=status.HTTP_200_OK)
+
+        except TokenError:
+            return Response(
+                {"error": "유효하지 않은 refresh token입니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 
 # ==================== 환자 관련 Views ====================
