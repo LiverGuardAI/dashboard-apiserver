@@ -7,8 +7,8 @@ import uuid
 # ----------------------------------------
 class DbrPatients(models.Model):
     SEX_CHOICES = [
-        ('M', '남성'),
-        ('F', '여성'),
+        ('male', '남성'),
+        ('female', '여성'),
     ]
 
     patient_id = models.UUIDField(
@@ -19,7 +19,7 @@ class DbrPatients(models.Model):
     )
     name = models.CharField(max_length=100, verbose_name="이름")
     birth_date = models.DateField(verbose_name="생년월일")
-    sex = models.CharField(max_length=1, choices=SEX_CHOICES, verbose_name="성별")
+    sex = models.CharField(max_length=6, choices=SEX_CHOICES, verbose_name="성별")
     phone = models.CharField(max_length=15, blank=True, null=True, verbose_name="전화번호")
     address = models.CharField(max_length=255, blank=True, null=True, verbose_name="주소")
     height = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="신장(cm)")
