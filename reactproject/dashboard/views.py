@@ -469,12 +469,38 @@ class DashboardGraphsView(APIView):
     """
     authentication_classes = [PatientJWTAuthentication]
     permission_classes = [IsAuthenticated]
-
+    
+    @swagger_auto_schema(
+        operation_description="혈액검사 결과 그래프 조회 (핵심 지표)",
+        operation_summary="혈액검사 그래프",
+        tags=["Dashboard"],
+        responses={
+            200: openapi.Response(
+                description="그래프 생성 성공",
+                examples={
+                    "application/json": {
+                        "patient_name": "홍길동",
+                        "test_date": "2025-01-15",
+                        "graphs": {
+                            "afp": "data:image/png;base64,...",
+                            "ast": "data:image/png;base64,...",
+                            "alt": "data:image/png;base64,...",
+                            "albi_grade": "data:image/png;base64,...",
+                            "ggt": "data:image/png;base64,...",
+                            "bilirubin": "data:image/png;base64,..."
+                        }
+                    }
+                }
+            ),
+            404: "혈액검사 결과 없음"
+        },
+        security=[{"Bearer": []}]
+    )
     def get(self, request):
         try:
             patient = request.user
 
-            # 최신 혈액검사 결과 가져오기
+            # 최신 혈액검사 결과
             latest_result = DbrBloodResults.objects.filter(
                 patient=patient
             ).order_by('-taken_at').first()
@@ -485,35 +511,99 @@ class DashboardGraphsView(APIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-            # 캐시 키 생성 (환자 ID + 검사 결과 ID)
-            cache_key = f"graphs_{patient.patient_id}_{latest_result.blood_result_id}"
-
-            # 캐시된 그래프 확인
+            # 캐시 키
+            cache_key = f"graphs_v2_{patient.patient_id}_{latest_result.blood_result_id}"
+            
+            # 캐시 확인
             cached_graphs = cache.get(cache_key)
             if cached_graphs:
                 return Response(cached_graphs, status=status.HTTP_200_OK)
 
-            # 4개의 그래프 생성 (albumin, bilirubin, inr, platelet 순서)
-            graphs = {}
-            indicators = ['albumin', 'bilirubin', 'inr', 'platelet']
+            # 🔥 핵심 지표 우선순위 (중요한 순서대로)
+            primary_indicators = [
+                'afp',         # 1. 종양 표지자
+                'ast',         # 2. 간세포 손상
+                'alt',         # 3. 간세포 손상
+                'albi_grade',  # 4. 간 기능 종합
+            ]
+            
+            secondary_indicators = [
+                'ggt',         # 5. 담도/알코올
+                'r_gtp',       # 6. 알코올
+                'bilirubin',   # 7. 황달
+                'albumin',     # 8. 간 합성
+            ]
 
-            for indicator in indicators:
+            graphs = {
+                'primary': {},    # 핵심 지표
+                'secondary': {},  # 부가 지표
+            }
+            
+            gender = patient.sex
+
+            # 🔥 핵심 지표 그래프 생성
+            for indicator in primary_indicators:
                 value = getattr(latest_result, indicator, None)
-
+                
                 if value is None:
-                    graphs[indicator] = None
+                    graphs['primary'][indicator] = None
                 else:
-                    # base64 이미지 생성
-                    img_base64 = generate_risk_bar(indicator, float(value))
-                    graphs[indicator] = f"data:image/png;base64,{img_base64}"
+                    try:
+                        img_base64 = generate_risk_bar(indicator, float(value), gender)
+                        graphs['primary'][indicator] = f"data:image/png;base64,{img_base64}"
+                    except Exception as e:
+                        print(f"❌ Error generating {indicator} graph: {e}")
+                        graphs['primary'][indicator] = None
+
+            # 📊 부가 지표 그래프 생성
+            for indicator in secondary_indicators:
+                value = getattr(latest_result, indicator, None)
+                
+                if value is None:
+                    graphs['secondary'][indicator] = None
+                else:
+                    try:
+                        img_base64 = generate_risk_bar(indicator, float(value), gender)
+                        graphs['secondary'][indicator] = f"data:image/png;base64,{img_base64}"
+                    except Exception as e:
+                        print(f"❌ Error generating {indicator} graph: {e}")
+                        graphs['secondary'][indicator] = None
+
+            # 📊 수치 요약
+            summary = {
+                'afp': {
+                    'value': float(latest_result.afp) if latest_result.afp else None,
+                    'status': self._get_afp_status(latest_result.afp),
+                    'importance': 'critical'
+                },
+                'ast': {
+                    'value': float(latest_result.ast) if latest_result.ast else None,
+                    'status': self._get_ast_status(latest_result.ast, gender),
+                    'importance': 'high'
+                },
+                'alt': {
+                    'value': float(latest_result.alt) if latest_result.alt else None,
+                    'status': self._get_alt_status(latest_result.alt, gender),
+                    'importance': 'high'
+                },
+                'albi': {
+                    'score': float(latest_result.albi) if latest_result.albi else None,
+                    'grade': latest_result.albi_grade,
+                    'status': latest_result.risk_level,
+                    'importance': 'high'
+                }
+            }
 
             response_data = {
                 "patient_name": patient.name,
                 "test_date": latest_result.taken_at,
-                "graphs": graphs
+                "gender": gender,
+                "graphs": graphs,
+                "summary": summary,
+                "message": "핵심 간 검사 지표 위주로 표시됩니다."
             }
 
-            # 캐시에 저장 (1시간 동안 유지)
+            # 캐시 저장 (1시간)
             cache.set(cache_key, response_data, 3600)
 
             return Response(response_data, status=status.HTTP_200_OK)
@@ -523,6 +613,157 @@ class DashboardGraphsView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+    
+    # 헬퍼 메서드
+    def _get_afp_status(self, afp):
+        if not afp:
+            return None
+        afp = float(afp)
+        if afp <= 10:
+            return 'safe'
+        elif afp <= 100:
+            return 'warning'
+        elif afp <= 400:
+            return 'danger'
+        else:
+            return 'critical'
+    
+    def _get_ast_status(self, ast, gender):
+        if not ast:
+            return None
+        ast = float(ast)
+        threshold = 40 if gender == 'male' else 32
+        if ast <= threshold:
+            return 'safe'
+        elif ast <= threshold + 10:
+            return 'warning'
+        else:
+            return 'danger'
+    
+    def _get_alt_status(self, alt, gender):
+        if not alt:
+            return None
+        alt = float(alt)
+        threshold = 40 if gender == 'male' else 35
+        if alt <= threshold:
+            return 'safe'
+        elif alt <= threshold + 10:
+            return 'warning'
+        else:
+            return 'danger'
+
+    # def get(self, request):
+    #     try:
+    #         patient = request.user
+
+    #         # 최신 혈액검사 결과 가져오기
+    #         latest_result = DbrBloodResults.objects.filter(
+    #             patient=patient
+    #         ).order_by('-taken_at').first()
+
+    #         if not latest_result:
+    #             return Response(
+    #                 {"error": "혈액검사 결과가 없습니다."},
+    #                 status=status.HTTP_404_NOT_FOUND
+    #             )
+
+    #         # 캐시 키 생성 (환자 ID + 검사 결과 ID)
+    #         cache_key = f"graphs_{patient.patient_id}_{latest_result.blood_result_id}"
+
+    #         # 캐시된 그래프 확인
+    #         cached_graphs = cache.get(cache_key)
+    #         if cached_graphs:
+    #             return Response(cached_graphs, status=status.HTTP_200_OK)
+
+    #         # 4개의 그래프 생성 (albumin, bilirubin, inr, platelet 순서)
+    #         graphs = {}
+    #         indicators = ['albumin', 'bilirubin', 'inr', 'platelet']
+
+    #         for indicator in indicators:
+    #             value = getattr(latest_result, indicator, None)
+
+    #             if value is None:
+    #                 graphs[indicator] = None
+    #             else:
+    #                 # base64 이미지 생성
+    #                 img_base64 = generate_risk_bar(indicator, float(value))
+    #                 graphs[indicator] = f"data:image/png;base64,{img_base64}"
+
+    #         response_data = {
+    #             "patient_name": patient.name,
+    #             "test_date": latest_result.taken_at,
+    #             "graphs": graphs
+    #         }
+
+    #         # 캐시에 저장 (1시간 동안 유지)
+    #         cache.set(cache_key, response_data, 3600)
+
+    #         return Response(response_data, status=status.HTTP_200_OK)
+
+    #     except Exception as e:
+    #         return Response(
+    #             {"error": str(e)},
+    #             status=status.HTTP_500_INTERNAL_SERVER_ERROR
+    #         )
+            
+# ==========================================
+# 혈액검사 분석 API 추가
+# ==========================================
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['GET'])
+def blood_result_analysis(request, blood_result_id):
+    """
+    혈액검사 결과 분석 API
+    GET /api/dashboard/blood-results/{id}/analysis/
+    """
+    try:
+        result = DbrBloodResults.objects.get(blood_result_id=blood_result_id)
+        
+        analysis = {
+            'record_id': result.blood_result_id,
+            'taken_at': result.taken_at,
+            'patient_name': result.patient.name,
+            'albi_score': float(result.albi) if result.albi else None,
+            'albi_grade': result.albi_grade,
+            'risk_level': result.risk_level,
+            'recommendations': []
+        }
+        
+        # AFP 분석
+        if result.afp:
+            afp = float(result.afp)
+            if afp > 400:
+                analysis['recommendations'].append({
+                    'priority': 'critical',
+                    'title': 'AFP 매우 높음',
+                    'description': f'AFP {afp} ng/mL - 즉시 병원 방문 필요'
+                })
+            elif afp > 100:
+                analysis['recommendations'].append({
+                    'priority': 'high',
+                    'title': 'AFP 높음',
+                    'description': f'AFP {afp} ng/mL - 간암 의심'
+                })
+        
+        # AST/ALT 비교
+        if result.ast and result.alt:
+            ast, alt = float(result.ast), float(result.alt)
+            if ast > alt:
+                analysis['recommendations'].append({
+                    'priority': 'high',
+                    'title': 'AST > ALT',
+                    'description': '알코올성 간손상 가능성'
+                })
+        
+        return Response(analysis)
+    
+    except DbrBloodResults.DoesNotExist:
+        return Response(
+            {'error': '검사 결과를 찾을 수 없습니다.'}, 
+            status=404
+        )
 
 
 # ==================== 약물 관련 Views ====================

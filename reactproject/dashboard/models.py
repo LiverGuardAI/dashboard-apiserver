@@ -72,6 +72,13 @@ class DbrBloodResults(models.Model):
     albi = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
     taken_at = models.DateField(verbose_name="검사일자")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일")
+    
+    r_gtp = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    total_protein = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    pt = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    albi_grade = models.CharField(max_length=7, blank=True, null=True,)
+    risk_level = models.CharField(max_length=7, choices=[('safe', 'safe'),('warning','warning'),('danger','danger')],
+                                     blank=True, null=True)
 
     class Meta:
         managed = True
@@ -79,6 +86,23 @@ class DbrBloodResults(models.Model):
         verbose_name = "혈액검사 결과"
         verbose_name_plural = "혈액검사 결과 목록"
 
+    def save(self, *args, **kwargs):
+        if self.bilirubin and self.albumin and self.bilirubin > 0:
+            import math
+            log10_bilirubin = math.log10(float(self.bilirubin))
+            self.albi = (0.66 * log10_bilirubin) - (0.085 * float(self.albumin))
+        
+            if self.albi <= -2.60:
+                self.albi_grade = 'Grade 1'
+                self.risk_level = 'safe'
+            elif self.albi <= -1.39:
+                self.albi_grade = 'Grade 2'
+                self.risk_level = 'warning'
+            else:
+                self.albi_grade = 'Grade 3'
+                self.risk_level = 'danger'
+        super().save(*args, **kwargs)
+        
     def __str__(self):
         return f"{self.patient.name} - {self.taken_at}"
 
@@ -89,8 +113,8 @@ class DbrBloodResults(models.Model):
 class DbrBloodTestReferences(models.Model):
     reference_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50, verbose_name="검사 항목명")
-    normal_range_min = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
-    normal_range_max = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    normal_range_min = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
+    normal_range_max = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
     unit = models.CharField(max_length=20, blank=True, null=True, verbose_name="단위")
     description = models.TextField(blank=True, null=True, verbose_name="설명")
 
