@@ -109,7 +109,7 @@ class DbrPatientLoginView(APIView):
             # ✅ JWT 발급 로직은 View에서 처리
             refresh = RefreshToken.for_user(user)
             access = refresh.access_token
-
+            
             response_data = {
                 "access": str(access),
                 "refresh": str(refresh),
@@ -122,12 +122,9 @@ class DbrPatientLoginView(APIView):
                 },
             }
 
-            print(f"🔍 Response user data: {response_data['user']}")
-
             return Response(response_data, status=status.HTTP_200_OK)
 
         # ❌ 로그인 실패
-        print("❌ Login errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # logout view
@@ -238,6 +235,7 @@ class DbrPatientTokenRefreshView(APIView):
     - refresh token으로 access token 재발급
     """
     permission_classes = [AllowAny]
+    authentication_classes = [] 
 
     @swagger_auto_schema(
         operation_description="access token 만료 시 refresh token으로 새로운 access token 발급",
@@ -275,9 +273,8 @@ class DbrPatientTokenRefreshView(APIView):
                 {"error": "refresh token이 필요합니다."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         try:
-            # ✅ 새 access token 발급
+            # 새 access token 발급
             token = RefreshToken(refresh_token)
             new_access = str(token.access_token)
 
