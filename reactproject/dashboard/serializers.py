@@ -100,6 +100,9 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
 
 class BloodTestReferenceSerializer(serializers.ModelSerializer):
+    normal_range_min = serializers.FloatField()
+    normal_range_max = serializers.FloatField()
+
     class Meta:
         model = DbrBloodTestReferences
         fields = '__all__'

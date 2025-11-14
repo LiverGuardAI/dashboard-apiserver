@@ -20,6 +20,7 @@ class DbrPatients(models.Model):
     name = models.CharField(max_length=100, verbose_name="이름")
     birth_date = models.DateField(verbose_name="생년월일")
     sex = models.CharField(max_length=6, choices=SEX_CHOICES, verbose_name="성별")
+    # resident_number = models.CharField(max_length=13, blank=True, null=True, verbose_name="주민등록번호")
     phone = models.CharField(max_length=15, blank=True, null=True, verbose_name="전화번호")
     address = models.CharField(max_length=255, blank=True, null=True, verbose_name="주소")
     height = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="신장(cm)")
@@ -87,7 +88,7 @@ class DbrBloodResults(models.Model):
         verbose_name_plural = "혈액검사 결과 목록"
 
     def save(self, *args, **kwargs):
-        if self.bilirubin and self.albumin and self.bilirubin > 0:
+        if self.bilirubin and self.albumin > 0:
             import math
             log10_bilirubin = math.log10(float(self.bilirubin))
             self.albi = (0.66 * log10_bilirubin) - (0.085 * float(self.albumin))
