@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from .models import Hospital, Clinic, Pharmacy, DepartmentOfTreatment
+from .models import (
+    Hospital,
+    Clinic,
+    Pharmacy,
+    DepartmentOfTreatment,
+    FavoriteHospital,
+    FavoriteClinic,
+)
 
 
 class DepartmentOfTreatmentSerializer(serializers.ModelSerializer):
@@ -69,3 +76,33 @@ class PharmacySerializer(serializers.ModelSerializer):
             'coordinate_x', 'coordinate_y', 'created_at'
         ]
         read_only_fields = ['created_at']
+
+
+class FavoriteHospitalSerializer(serializers.ModelSerializer):
+    patient_id = serializers.UUIDField(source='patient.patient_id', read_only=True)
+    hospital = HospitalLiteSerializer(read_only=True)
+    hospital_id = serializers.PrimaryKeyRelatedField(
+        queryset=Hospital.objects.all(),
+        source='hospital',
+        write_only=True,
+    )
+
+    class Meta:
+        model = FavoriteHospital
+        fields = ['favorite_id', 'patient_id', 'hospital', 'hospital_id', 'created_at']
+        read_only_fields = ['favorite_id', 'patient_id', 'hospital', 'created_at']
+
+
+class FavoriteClinicSerializer(serializers.ModelSerializer):
+    patient_id = serializers.UUIDField(source='patient.patient_id', read_only=True)
+    clinic = ClinicLiteSerializer(read_only=True)
+    clinic_id = serializers.PrimaryKeyRelatedField(
+        queryset=Clinic.objects.all(),
+        source='clinic',
+        write_only=True,
+    )
+
+    class Meta:
+        model = FavoriteClinic
+        fields = ['favorite_id', 'patient_id', 'clinic', 'clinic_id', 'created_at']
+        read_only_fields = ['favorite_id', 'patient_id', 'clinic', 'created_at']
